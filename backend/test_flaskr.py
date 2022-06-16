@@ -15,7 +15,10 @@ class TriviaTestCase(unittest.TestCase):
         self.app = create_app()
         self.client = self.app.test_client
         self.database_name = "trivia_test"
-        self.database_path = "postgresql://{}:{}@{}/{}".format('student','student','localhost:5432', self.database_name)
+        user = os.getenv('DB_user', 'student')
+        password = os.getenv('DB_password', 'student')
+        self.database_path = "postgres://{}:{}@{}/{}".format(user,
+                    password, 'localhost:5432', self.database_name)
         setup_db(self.app, self.database_path)
 
         self.new_question = {
@@ -35,15 +38,10 @@ class TriviaTestCase(unittest.TestCase):
     def tearDown(self):
         """Executed after reach test"""
         pass
-
-    """
-    TODO
-    Write at least one test for each test for successful operation and for expected errors.
-    """
     """
     TEST: At this point, when you start the application
     you should see questions and categories generated,
-    ten questions per page and pagination at the bottom of the screen for three pages.
+    ten questions per page and pagination at the bottom of the screen.
     Clicking on the page numbers should update the questions.
     """
 
@@ -64,6 +62,7 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data['success'], True)
         self.assertTrue(data['total_questions'])
         self.assertTrue(len(data['questions']))
+        self.assertTrue(data['categories'])
 
     def test_404_sent_requesting_beyond_valid_page(self):
         res = self.client().get('/questions?page=1000', json={'difficulty': 1})
@@ -71,10 +70,11 @@ class TriviaTestCase(unittest.TestCase):
 
         self.assertEqual(res.status_code, 404)
         self.assertEqual(data['success'], False)
-        self.assertEqual(data['message'], 'resource not found')
+        self.assertEqual(data['message'], 'Resource not found')
 
     """
-    TEST: When you click the trash icon next to a question, the question will be removed.
+    TEST: When you click the trash icon next to a question, the question will
+    be removed.
     This removal will persist in the database and when you refresh the page.
     """
 
@@ -91,7 +91,6 @@ class TriviaTestCase(unittest.TestCase):
         self.assertTrue(len(data['questions']))
         self.assertEqual(question, None)
 
-
     def test_422_question_does_not_exist(self):
         res = self.client().delete('/questions/100')
         data = json.loads(res.data)
@@ -102,8 +101,8 @@ class TriviaTestCase(unittest.TestCase):
 
     """
     TEST: When you submit a question on the "Add" tab,
-    the form will clear and the question will appear at the end of the last page
-    of the questions list in the "List" tab.
+    the form will clear and the question will appear at the end of
+    the last page of the questions list in the "List" tab.
     """
     def test_new_question(self):
         res = self.client().post('/questions', json=self.new_question)
@@ -112,8 +111,8 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'], True)
         self.assertTrue(data['created'])
+        self.assertTrue(data['total_questions'])
         self.assertTrue(len(data['questions']))
-
 
     def test_405_if_question_creation_not_allowed(self):
         res = self.client().post('/questions/50', json=self.new_question)
@@ -136,8 +135,9 @@ class TriviaTestCase(unittest.TestCase):
 
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'], True)
-        self.assertTrue(data['total_categories'])
-        self.assertTrue(len(data['categories']))
+        self.assertTrue(data['total_questions'])
+        self.assertTrue(len(data['questions']))
+        self.assertTrue(data['current_category'], 1)
 
     """
     TEST: Search by any phrase. The questions list will update to include
