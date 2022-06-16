@@ -129,7 +129,12 @@ def create_app(test_config=None):
                     'total_questions': len(selection)
                     })
             else:
-                question = Question(question=new_question, answer=new_answer, difficulty=new_difficulty,category=new_category)
+                question = Question(
+                question=new_question,
+                answer=new_answer,
+                difficulty=new_difficulty,
+                category=new_category
+                )
                 question.insert()
 
                 selection = Question.query.all()
@@ -176,16 +181,16 @@ def create_app(test_config=None):
 
         try:
             if category['id'] == 0:
-                questions = Question.query.filter(Question.id.notin_(previous_questions)).all()
+                selection = Question.query.filter(Question.id.notin_(previous_questions)).all()
             else:
-                questions = Question.query.filter(Question.id.notin_(previous_questions), Question.category == category['id']).all()
+                selection = Question.query.filter(Question.id.notin_(previous_questions), Question.category == category['id']).all()
 
                 def random_number():
-                    return random.randint(0, len(questions) - 1)
+                    return random.randint(0, len(selection) - 1)
 
-            if len(questions) > 0 :
+            if len(selection) > 0 :
                 r = random_number()
-                next_question = questions[r].format()
+                next_question = selection[r].format()
 
             return jsonify({
                 'success': True,
