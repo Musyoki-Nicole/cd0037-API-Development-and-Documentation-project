@@ -8,7 +8,6 @@ from models import setup_db, Question, Category
 
 QUESTIONS_PER_PAGE = 10
 
-
 def paginate(request, selection):
     page = request.args.get('page', 1, type=int)
     start = (page - 1) * QUESTIONS_PER_PAGE
@@ -18,7 +17,6 @@ def paginate(request, selection):
     current_questions = questions[start:end]
 
     return current_questions
-
 
 def create_app(test_config=None):
     # create and configure the app
@@ -106,12 +104,11 @@ def create_app(test_config=None):
             abort(422)
 
     """
-    POST endpoint to post a new question.
+    POST endpoint to post a new question and search for a question.
     """
     @app.route('/questions', methods=['POST'])
     def add_question():
         body = request.get_json()
-
         new_question = body.get('question', None)
         new_answer = body.get('answer', None)
         new_difficulty = body.get('difficulty', None)
@@ -155,7 +152,6 @@ def create_app(test_config=None):
     @app.route('/categories/<int:category_id>/questions', methods=['GET'])
     def retrieve_category_questions(category_id):
         category = str(category_id)
-
         selection = Question.query.filter(Question.category == category).all()
         current_questions = paginate(request, selection)
 
